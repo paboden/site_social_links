@@ -1,0 +1,6 @@
+name = Site social media links
+description = "Generates a block of social media links and administration page"
+core = 7.x
+version = 1.0
+
+configure = admin/config/system/site-social-links

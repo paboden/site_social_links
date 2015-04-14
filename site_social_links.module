@@ -1,0 +1,99 @@
+<?php
+
+/**
+ * Implements hook_permission().
+ */
+function site_social_links_permission() {
+  return array(
+    'administer social links config' => array(
+      'title' => t('Administer site social media links'),
+      'description' => t('Administer the general settings for social media links block'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function site_social_links_menu() {
+  $items['admin/config/system/site-social-links'] = array(
+    'title' => 'Social icons',
+    'description' => 'Configure social media links.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('site_social_links_configure'),
+    'access arguments' => array('administer social links config'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'site_social_links.admin.inc',
+    'file path' => drupal_get_path('module', 'site_social_links'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function site_social_links_theme() {
+  return array(
+    'site_social_links_block' => array(
+      // Specify variables you'll be using in the template.
+      'variables' => array(
+        // empty array is correct. Values set here are stored in Theme Registry.
+        'social_icons' => array(),
+      ),
+      // Use a template file called site-social-links-block.tpl.php.
+      'template' => 'templates/site_social_links_block',
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function site_social_links_block_info() {
+
+  $blocks['site_social_links'] = array(
+    'info' => t('Social links'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function site_social_links_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'site_social_links':
+      // We don't want the block to have a title.
+      $block['subject'] = '';
+      // Using a Renderable Array rather than a HTML-returning callback function.
+      $block['content'] = array(
+        // Specify the theme function to use.
+        '#theme' => 'site_social_links_block',
+        // Provide variable values as specified in hook_theme.
+        '#social_icons' => variable_get('site_social_links', array()),
+      );
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Implements hook_contextual_links_view_alter().
+ */
+function site_social_links_contextual_links_view_alter(&$element, $items) {
+  if (isset($element['#element']['#block']->module)) {
+    if ($element['#element']['#block']->module == 'site_social_links') {
+      $links = &$element['#links'];
+      $links = NULL;
+      $links['site_social_links-configure']['title'] = 'Edit social icons';
+      $links['site_social_links-configure']['href'] = 'admin/config/system/site-social-links';
+      $links['site_social_links-configure']['query'] = drupal_get_destination();
+    }
+  }
+}

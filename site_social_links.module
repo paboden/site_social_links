@@ -97,3 +97,15 @@ function site_social_links_contextual_links_view_alter(&$element, $items) {
     }
   }
 }
+
+/**
+ * Implements hook_preprocess_panels_pane().
+ */
+function site_social_links_preprocess_panels_pane(&$vars) {
+  if (isset($vars['pane']->subtype) && ($vars['pane']->subtype == 'site_social_links-site_social_links')) {
+    $link = '<div class="contextual-links-wrapper"><ul class="contextual-links"><li class="0 first last">';
+    $link .= l(t('Edit social icons'),'admin/config/system/site-social-links', array('query' => drupal_get_destination()));
+    $link .= '</li></ul></div>';
+    $vars['admin_links'] = $link;
+  }
+}

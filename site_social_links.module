@@ -70,13 +70,9 @@ function site_social_links_block_view($delta = '') {
     case 'site_social_links':
       // We don't want the block to have a title.
       $block['subject'] = '';
-      // Using a Renderable Array rather than a HTML-returning callback function.
-      $block['content'] = array(
-        // Specify the theme function to use.
-        '#theme' => 'site_social_links_block',
-        // Provide variable values as specified in hook_theme.
-        '#social_icons' => variable_get('site_social_links', array()),
-      );
+      // Using a callback function to get a renderable array of content for this
+      // block. We cache the data in the callback function for faster rendering.
+      $block['content'] = site_social_links_block_content();
       break;
   }
 
@@ -108,4 +104,28 @@ function site_social_links_preprocess_panels_pane(&$vars) {
     $link .= '</li></ul></div>';
     $vars['admin_links'] = $link;
   }
+}
+
+/**
+ * Callback function to get the renderable array of data for the site copyright block.
+ */
+function site_social_links_block_content() {
+  $content = &drupal_static(__FUNCTION__);
+
+  if (!isset($content)) {
+    if ($cache = cache_get('site_social_links_block_content')) {
+      $content = $cache->data;
+    }
+    else {
+      $content = array(
+        // Specify the theme function to use.
+        '#theme' => 'site_social_links_block',
+        // Provide variable values as specified in hook_theme.
+        '#social_icons' => variable_get('site_social_links', array()),
+      );
+      cache_set('site_social_links_block_content', $content, 'cache');
+    }
+  }
+
+  return $content;
 }

@@ -4,6 +4,7 @@
  * Implements hook_permission().
  */
 function site_social_links_permission() {
+
   return array(
     'administer social links config' => array(
       'title' => t('Administer site social media links'),
@@ -34,15 +35,16 @@ function site_social_links_menu() {
  * Implements hook_theme().
  */
 function site_social_links_theme() {
+
   return array(
-    'site_social_links_block' => array(
+    'site_social_links' => array(
       // Specify variables you'll be using in the template.
       'variables' => array(
         // empty array is correct. Values set here are stored in Theme Registry.
         'social_icons' => array(),
       ),
       // Use a template file called site-social-links-block.tpl.php.
-      'template' => 'templates/site_social_links_block',
+      'template' => 'templates/site_social_links',
     ),
   );
 }
@@ -83,6 +85,7 @@ function site_social_links_block_view($delta = '') {
  * Implements hook_contextual_links_view_alter().
  */
 function site_social_links_contextual_links_view_alter(&$element, $items) {
+
   if (isset($element['#element']['#block']->module)) {
     if ($element['#element']['#block']->module == 'site_social_links') {
       $links = &$element['#links'];
@@ -98,11 +101,26 @@ function site_social_links_contextual_links_view_alter(&$element, $items) {
  * Implements hook_preprocess_panels_pane().
  */
 function site_social_links_preprocess_panels_pane(&$vars) {
-  if (isset($vars['pane']->subtype) && ($vars['pane']->subtype == 'site_social_links-site_social_links')) {
-    $link = '<div class="contextual-links-wrapper"><ul class="contextual-links"><li class="0 first last">';
-    $link .= l(t('Edit social icons'),'admin/config/system/site-social-links', array('query' => drupal_get_destination()));
-    $link .= '</li></ul></div>';
-    $vars['admin_links'] = $link;
+
+ if (user_access('administer social links config')) {
+    if (isset($vars['pane']->subtype) && ($vars['pane']->subtype == 'site_social_links-site_social_links')) {
+      $link = array(
+        '#prefix' => '<div class="contextual-links-wrapper">',
+        '#theme' => 'item_list',
+        '#title' => '',
+        '#type' => 'ul',
+        '#items' => array(
+          'data' => l(t('Edit social icons'),'admin/config/system/site-social-links', array('query' => drupal_get_destination())),
+          'class' => array('0 first last'),
+        ),
+        '#attributes' => array(
+          'class' => array('contextual-links'),
+        ),
+        '#suffix' => '</div>',
+      );
+
+      $vars['admin_links'] = drupal_render($link);
+    }
   }
 }
 
@@ -110,22 +128,19 @@ function site_social_links_preprocess_panels_pane(&$vars) {
  * Callback function to get the renderable array of data for the site copyright block.
  */
 function site_social_links_block_content() {
-  $content = &drupal_static(__FUNCTION__);
 
-  if (!isset($content)) {
-    if ($cache = cache_get('site_social_links_block_content')) {
-      $content = $cache->data;
-    }
-    else {
-      $content = array(
-        // Specify the theme function to use.
-        '#theme' => 'site_social_links_block',
-        // Provide variable values as specified in hook_theme.
-        '#social_icons' => variable_get('site_social_links', array()),
-      );
-      cache_set('site_social_links_block_content', $content, 'cache');
-    }
-  }
+  $content = array(
+    // Specify the theme function to use.
+    '#theme' => 'site_social_links',
+    // Provide variable values as specified in hook_theme.
+    '#social_icons' => variable_get('site_social_links', array()),
+    // Cache our render array for later, faster reuse.
+    '#cache' => array(
+      'cid' => 'site_social_links',
+      'bin' => 'cache',
+      'expire' => 0, // 24 hour caching
+    ),
+  );
 
   return $content;
 }

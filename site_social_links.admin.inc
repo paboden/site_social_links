@@ -31,26 +31,31 @@ function site_social_links_configure($form, &$form_state) {
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     );
+
     $form['site_social_links'][$i]['name'] = array(
       '#type' => 'textfield',
       '#title' => t('Name'),
       '#default_value' => isset($site_social_links[$i]['name']) ? $site_social_links[$i]['name'] : '',
     );
+
     $form['site_social_links'][$i]['display_name'] = array(
       '#type' => 'checkbox',
       '#title' => t('Display Name'),
       '#default_value' => isset($site_social_links[$i]['display_name']) ? $site_social_links[$i]['display_name'] : FALSE,
     );
+
     $form['site_social_links'][$i]['url'] = array(
       '#type' => 'textfield',
       '#title' => t('URL'),
       '#default_value' => isset($site_social_links[$i]['url']) ? $site_social_links[$i]['url'] : '',
     );
+
     $form['site_social_links'][$i]['target'] = array(
       '#type' => 'checkbox',
       '#title' => t('Open in new window'),
       '#default_value' => isset($site_social_links[$i]['target']) ? $site_social_links[$i]['target'] : FALSE,
     );
+
     $form['site_social_links'][$i]['class'] = array(
       '#type' => 'textfield',
       '#title' => t('Classes'),
@@ -96,4 +101,25 @@ function site_social_links_remove_icon($form, &$form_state) {
     $form_state['num_icons']--;
   }
   $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function site_social_links_form_site_social_links_configure_alter(&$form, &$form_state) {
+  // Example of using a form alter to add in new functionality to the form.
+  // This is adding a function to clear the caches related to this module when
+  // the admin form is saved.
+  $form['#submit'][] = "_site_social_links_cache_clear";
+}
+
+/**
+ * Submit handler function to clear out the homepage caches on homepage manager form submit.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _site_social_links_cache_clear($form, &$form_state) {
+  // Clear the social links block cache and rebuild.
+  cache_clear_all('site_social_links', 'cache', TRUE);
 }

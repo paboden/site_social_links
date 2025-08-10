@@ -1,3 +1,5 @@
+**Drupal 7**
+
 # Site social media links
 
 This is an both a usable and example module for building a simple module. This module creates a config form with system variables, a block to display the config data, and themes the block using a proper template file.
